@@ -1,1 +1,1 @@
-# distribuidos-wishlist
+# distributed-products

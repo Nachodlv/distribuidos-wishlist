@@ -1,0 +1,23 @@
+syntax = "proto3";
+
+package product;
+
+service ProductService {
+    rpc GetProduct (ProductRequest) returns (ProductReply) {}
+    rpc NewProduct (NewProductRequest) returns (ProductReply) {}
+}
+
+message ProductRequest {
+    int64 id = 1;
+}
+
+message ProductReply {
+    int64 id = 1;
+    string name = 2;
+    string description = 3;
+}
+
+message NewProductRequest {
+    string name = 1;
+    string description = 2;
+}

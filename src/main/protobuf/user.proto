@@ -1,0 +1,50 @@
+syntax = "proto3";
+
+package product;
+
+import "product.proto";
+
+service UserService {
+    rpc AddProduct (AddProductRequest) returns (AddProductResponse) {}
+    rpc getProducts (GetProductsRequest) returns (GetProductsResponse) {}
+    rpc deleteProduct (DeleteProductRequest) returns (DeleteProductResponse) {}
+    rpc addUser (AddUserRequest) returns (AddUserResponse) {}
+}
+
+// Add product messages
+message AddProductRequest {
+    int64 productId = 1;
+    int64 userId = 2;
+}
+
+message AddProductResponse {
+    int64 productId = 1;
+}
+
+// Get product messages
+message GetProductsRequest {
+    int64 userId = 1;
+}
+
+message GetProductsResponse {
+    repeated ProductReply products = 1;
+}
+
+// Delete product messages
+message DeleteProductRequest {
+    int64 userId = 1;
+    int64 productId = 2;
+}
+
+message DeleteProductResponse {
+    int64 productId = 1;
+}
+
+message AddUserRequest {
+    string firstName = 1;
+    string lastName = 2;
+}
+
+message AddUserResponse {
+    int64 userId = 1;
+}
