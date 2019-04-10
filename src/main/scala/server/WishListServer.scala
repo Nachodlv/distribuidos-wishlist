@@ -2,7 +2,7 @@ package server
 
 import io.grpc.{ManagedChannel, ManagedChannelBuilder, ServerBuilder}
 import product.product.ProductServiceGrpc
-import product.user.{AddProductRequest, AddUserRequest, GetProductsRequest, UserServiceGrpc}
+import product.user.{AddProductRequest, AddUserRequest, DeleteProductRequest, GetProductsRequest, UserServiceGrpc}
 import repositories.{UserRepository, WishListRepository}
 import service.UserService
 import slick.basic.DatabaseConfig
@@ -33,26 +33,26 @@ object WishListServer extends App{
   server.awaitTermination()
 }
 
-object ClientDemo extends App {
-
-  implicit val ec: ExecutionContextExecutor = ExecutionContext.global
-
-  val channel = ManagedChannelBuilder.forAddress("localhost", 50001)
-    .usePlaintext(true)
-    .build()
-
-  val stub = UserServiceGrpc.stub(channel)
-
-  val result = stub.addUser(AddUserRequest("eduardo", "scolaro"))
-
-  result.onComplete { r =>
-    stub.addProduct(AddProductRequest(1, r.get.userId)).onComplete(r2 => {
-      println(r2.get.productId)
-      stub.getProducts(GetProductsRequest(r.get.userId)).onComplete(r3 => {
-        println(r3.get.products)
-      })
-    })
-  }
-
-  System.in.read()
-}
+//object ClientDemo extends App {
+//
+//  implicit val ec: ExecutionContextExecutor = ExecutionContext.global
+//
+//  val channel = ManagedChannelBuilder.forAddress("localhost", 50001)
+//    .usePlaintext(true)
+//    .build()
+//
+//  val stub = UserServiceGrpc.stub(channel)
+//
+//  val user = stub.addUser(AddUserRequest("eduardo", "scolaro"))
+//  user.onComplete { r =>
+//    stub.addProduct(AddProductRequest(1, r.get.userId)).onComplete(r2 => {
+//      println(r2.get.productId)
+//      stub.deleteProduct(DeleteProductRequest(r.get.userId, r2.get.productId)).onComplete(r4 => {
+//        println(r4)
+//        println("completed")
+//      })
+//    })
+//  }
+//
+//  System.in.read()
+//}
