@@ -9,6 +9,7 @@ service UserService {
     rpc getProducts (GetProductsRequest) returns (GetProductsResponse) {}
     rpc deleteProduct (DeleteProductRequest) returns (DeleteProductResponse) {}
     rpc addUser (AddUserRequest) returns (AddUserResponse) {}
+    rpc isActive   (PingRequest) returns (PingReply) {}
 }
 
 // Add product messages
@@ -47,4 +48,10 @@ message AddUserRequest {
 
 message AddUserResponse {
     int64 userId = 1;
+}
+
+message PingRequest {}
+
+message PingReply {
+    string response = 1;
 }

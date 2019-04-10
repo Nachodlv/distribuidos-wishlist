@@ -2,7 +2,7 @@ package service
 
 import product.product.ProductServiceGrpc.ProductServiceStub
 import product.product.{ProductReply, ProductRequest}
-import product.user.{AddProductRequest, AddProductResponse, AddUserRequest, AddUserResponse, DeleteProductRequest, DeleteProductResponse, GetProductsRequest, GetProductsResponse, UserServiceGrpc}
+import product.user.{AddProductRequest, AddProductResponse, AddUserRequest, AddUserResponse, DeleteProductRequest, DeleteProductResponse, GetProductsRequest, GetProductsResponse, PingReply, PingRequest, UserServiceGrpc}
 import repositories.{UserRepository, WishListRepository}
 
 import scala.concurrent.{ExecutionContext, Future}
@@ -32,6 +32,11 @@ class UserService(wishListRepo: WishListRepository, userRepo: UserRepository, st
 
   override def addUser(request: AddUserRequest): Future[AddUserResponse] = {
     userRepo.create(request.firstName, request.lastName).map(u => AddUserResponse(u.id))
+  }
+
+  //implementar isActive (solo recibe el request y devuelve un reply con un string)
+  override def isActive(request: PingRequest): Future[PingReply] = {
+    Future.successful(PingReply("active"))
   }
 }
 
