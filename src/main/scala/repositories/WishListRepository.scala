@@ -34,8 +34,9 @@ class WishListRepository (val config: DatabaseConfig[H2Profile])
     }.map{_.productId}.result
   }
 
-  //Por que no devuelve un Long? TODO me devuelve el id de la fila, no el del producto
-  def deleteProduct(userId: Long, productId: Long): Future[Int] = db.run {
-    wishList.filter( w => w.productId === productId && w.userId === userId).delete
+  def deleteProduct(userId: Long, productId: Long): Future[Long] = {
+    db.run {
+      wishList.filter( w => w.productId === productId && w.userId === userId).delete
+    }.map(_ => productId)
   }
 }
