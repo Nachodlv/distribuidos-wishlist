@@ -1,9 +1,10 @@
 package server
 
-import io.grpc.{ManagedChannelBuilder, ServerBuilder}
-import product.user.{AddProductRequest, AddUserRequest, UserServiceGrpc}
+import io.grpc.{ManagedChannel, ManagedChannelBuilder, ServerBuilder}
+import product.product.ProductServiceGrpc
+import product.user.{AddProductRequest, AddUserRequest, GetProductsRequest, UserServiceGrpc}
 import repositories.{UserRepository, WishListRepository}
-import routers.UserService
+import service.UserService
 import slick.basic.DatabaseConfig
 import slick.jdbc.H2Profile
 
@@ -11,14 +12,19 @@ import scala.concurrent.{ExecutionContext, ExecutionContextExecutor}
 
 object WishListServer extends App{
 
-  implicit val ec = ExecutionContext.global
+  implicit val ec: ExecutionContextExecutor = ExecutionContext.global
 
   val config = DatabaseConfig.forConfig[H2Profile]("db")
   val wishListRepo = new WishListRepository(config)
-  val userRepo = new UserRepository(config);
+  val userRepo = new UserRepository(config)
 
-  val server = ServerBuilder.forPort(50000)
-    .addService(UserServiceGrpc.bindService(new UserService(wishListRepo, userRepo), ExecutionContext.global))
+  val channel: ManagedChannel = ManagedChannelBuilder.forAddress("localhost", 50000)
+    .usePlaintext(true)
+    .build()
+  val stub: ProductServiceGrpc.ProductServiceStub = ProductServiceGrpc.stub(channel)
+
+  val server = ServerBuilder.forPort(50001)
+    .addService(UserServiceGrpc.bindService(new UserService(wishListRepo, userRepo, stub), ExecutionContext.global))
     .build()
 
   server.start()
@@ -31,7 +37,7 @@ object ClientDemo extends App {
 
   implicit val ec: ExecutionContextExecutor = ExecutionContext.global
 
-  val channel = ManagedChannelBuilder.forAddress("localhost", 50000)
+  val channel = ManagedChannelBuilder.forAddress("localhost", 50001)
     .usePlaintext(true)
     .build()
 
@@ -42,8 +48,9 @@ object ClientDemo extends App {
   result.onComplete { r =>
     stub.addProduct(AddProductRequest(1, r.get.userId)).onComplete(r2 => {
       println(r2.get.productId)
-      println(r.get.userId)
-      println("completed")
+      stub.getProducts(GetProductsRequest(r.get.userId)).onComplete(r3 => {
+        println(r3.get.products)
+      })
     })
   }
 
