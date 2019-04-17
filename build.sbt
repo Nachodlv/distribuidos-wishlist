@@ -32,4 +32,5 @@ PB.targets in Compile := Seq(
   scalapb.gen() -> (sourceManaged in Compile).value
 )
 
+libraryDependencies += "com.github.mingchuno" %% "etcd4s-core" % "0.2.0"
 //libraryDependencies += "org.slf4j" % "slf4j-log4j12" % "1.7.26" % Test

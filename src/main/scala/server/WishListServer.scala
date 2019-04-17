@@ -2,7 +2,7 @@ package server
 
 import io.grpc.{ManagedChannel, ManagedChannelBuilder, ServerBuilder}
 import product.product.ProductServiceGrpc
-import product.user.{AddProductRequest, AddUserRequest, DeleteProductRequest, GetProductsRequest, UserServiceGrpc}
+import product.user.{AddUserRequest, UserServiceGrpc}
 import repositories.{UserRepository, WishListRepository}
 import service.UserService
 import slick.basic.DatabaseConfig
@@ -14,17 +14,15 @@ object WishListServer extends App{
 
   implicit val ec: ExecutionContextExecutor = ExecutionContext.global
 
+  val stubManager = new ServiceManager
+  stubManager.startConnection("0.0.0.0", 50001, "wishlist")
+
   val config = DatabaseConfig.forConfig[H2Profile]("db")
   val wishListRepo = new WishListRepository(config)
   val userRepo = new UserRepository(config)
 
-  val channel: ManagedChannel = ManagedChannelBuilder.forAddress("localhost", 50000)
-    .usePlaintext(true)
-    .build()
-  val stub: ProductServiceGrpc.ProductServiceStub = ProductServiceGrpc.stub(channel)
-
   val server = ServerBuilder.forPort(50001)
-    .addService(UserServiceGrpc.bindService(new UserService(wishListRepo, userRepo, stub), ExecutionContext.global))
+    .addService(UserServiceGrpc.bindService(new UserService(wishListRepo, userRepo, stubManager), ExecutionContext.global))
     .build()
 
   server.start()
@@ -52,6 +50,20 @@ object WishListServer extends App{
 //        println("completed")
 //      })
 //    })
+//  }
+//  val stubManager = new ServiceManager()
+//
+//  stubManager.getAddress("wishlist").onComplete{
+//    case Success(value) => println(value.get.address)
+//    case Failure(exception) => println(exception)
+//  }
+//  stubManager.getAddress("wishlist").onComplete{
+//    case Success(value) => println(value.get.address)
+//    case Failure(exception) => println(exception)
+//  }
+//  stubManager.getAddress("wishlist").onComplete{
+//    case Success(value) => println(value.get.address)
+//    case Failure(exception) => println(exception)
 //  }
 //
 //  System.in.read()
