@@ -12,6 +12,16 @@ service UserService {
     rpc isActive   (PingRequest) returns (PingReply) {}
 }
 
+// Add user messages
+message AddUserRequest {
+    string firstName = 1;
+    string lastName = 2;
+}
+
+message AddUserResponse {
+    int64 userId = 1;
+}
+
 // Add product messages
 message AddProductRequest {
     int64 productId = 1;
@@ -41,16 +51,9 @@ message DeleteProductResponse {
     int64 productId = 1;
 }
 
-message AddUserRequest {
-    string firstName = 1;
-    string lastName = 2;
-}
+message PingRequest {
 
-message AddUserResponse {
-    int64 userId = 1;
 }
-
-message PingRequest {}
 
 message PingReply {
     string response = 1;

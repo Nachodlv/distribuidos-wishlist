@@ -1,8 +1,7 @@
 package server
 
-import io.grpc.{ManagedChannel, ManagedChannelBuilder, ServerBuilder}
-import product.product.ProductServiceGrpc
-import product.user.{AddProductRequest, AddUserRequest, DeleteProductRequest, GetProductsRequest, UserServiceGrpc}
+import io.grpc.{ManagedChannelBuilder, ServerBuilder}
+import product.user.{AddProductRequest, AddUserRequest, GetProductsRequest, UserServiceGrpc}
 import repositories.{UserRepository, WishListRepository}
 import service.UserService
 import slick.basic.DatabaseConfig

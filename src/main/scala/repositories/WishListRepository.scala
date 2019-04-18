@@ -1,13 +1,10 @@
 package repositories
 
-import com.sun.org.apache.xpath.internal.operations.Bool
-import database.{Db, UserTable, WishlistTable}
+import database.{Db, WishlistTable}
 import models.WishList
-import org.h2.tools.SimpleResultSet.SimpleArray
 import slick.basic.DatabaseConfig
-import slick.jdbc.{H2Profile, JdbcProfile}
+import slick.jdbc.H2Profile
 import slick.lifted
-import slick.lifted.{QueryBase, TableQuery}
 
 import scala.concurrent.Future
 
@@ -16,10 +13,8 @@ class WishListRepository (val config: DatabaseConfig[H2Profile])
 
   import config.profile.api._
 
-
   private val wishList = lifted.TableQuery[WishLists]
   db.run(DBIO.seq(wishList.schema.create))
-
 
   def addProduct(userId: Long, productId: Long): Future[WishList] = db.run {
     (wishList.map(u => (u.userId, u.productId))
@@ -34,7 +29,7 @@ class WishListRepository (val config: DatabaseConfig[H2Profile])
     }.map{_.productId}.result
   }
 
-  //Por que no devuelve un Long? TODO me devuelve el id de la fila, no el del producto
+  // Por que no devuelve un Long? TODO me devuelve el id de la fila, no el del producto
   def deleteProduct(userId: Long, productId: Long): Future[Int] = db.run {
     wishList.filter( w => w.productId === productId && w.userId === userId).delete
   }
