@@ -23,8 +23,8 @@ class UserService(wishListRepo: WishListRepository, userRepo: UserRepository, se
 
   override def getProducts(in: GetProductsRequest): Future[GetProductsResponse] = {
     getProductStub.flatMap(stub => {
-      val result: Future[Seq[Future[ProductReply]]] =
-        wishListRepo.getProducts(in.userId).map(ids => ids.map(id => stub.getProduct(ProductRequest(id))))
+      val result = wishListRepo.getProducts(in.userId).map(ids => ids.map(id => stub.getProduct(ProductRequest(id))))
+
       val results2: Future[Seq[ProductReply]] = result.flatMap(r => Future.sequence(r))
 
       /*
