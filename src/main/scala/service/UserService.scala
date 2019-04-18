@@ -23,16 +23,11 @@ class UserService(wishListRepo: WishListRepository, userRepo: UserRepository, st
     results2.map(products =>  GetProductsResponse(products))
   }
 
-  override def deleteProduct(in: DeleteProductRequest): Future[DeleteProductResponse] = {
-    wishListRepo.deleteProduct(in.userId, in.productId).map{
-      id => DeleteProductResponse(id)
-    }
-    //how can I manage a failure? use option?
-  }
-
   override def addUser(request: AddUserRequest): Future[AddUserResponse] = {
     userRepo.create(request.firstName, request.lastName).map(u => AddUserResponse(u.id))
   }
+
+  override def deleteProduct(request: DeleteProductRequest): Future[DeleteProductResponse] = ???
 }
 
 case object UserNotFoundException extends RuntimeException

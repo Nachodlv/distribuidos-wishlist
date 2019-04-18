@@ -10,7 +10,7 @@ import slick.jdbc.H2Profile
 
 import scala.concurrent.{ExecutionContext, ExecutionContextExecutor}
 
-object WishListServer extends App{
+object WishListServer extends App {
 
   implicit val ec: ExecutionContextExecutor = ExecutionContext.global
 

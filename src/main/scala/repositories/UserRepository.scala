@@ -5,7 +5,6 @@ import models.User
 import slick.basic.DatabaseConfig
 import slick.jdbc.H2Profile
 import slick.lifted
-import slick.lifted.TableQuery
 
 import scala.concurrent.Future
 

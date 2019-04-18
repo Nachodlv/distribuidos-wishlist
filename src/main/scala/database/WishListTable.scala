@@ -1,6 +1,6 @@
 package database
 
-import models.{Product, User, WishList}
+import models.WishList
 
 trait WishlistTable {
   this: Db =>
