@@ -2,13 +2,14 @@ package server
 
 import io.grpc.{ManagedChannel, ManagedChannelBuilder, ServerBuilder}
 import product.product.ProductServiceGrpc
-import product.user.{AddUserRequest, UserServiceGrpc}
+import product.user.{AddProductRequest, AddUserRequest, DeleteProductRequest, GetProductsRequest, UserServiceGrpc}
 import repositories.{UserRepository, WishListRepository}
 import service.UserService
 import slick.basic.DatabaseConfig
 import slick.jdbc.H2Profile
 
 import scala.concurrent.{ExecutionContext, ExecutionContextExecutor}
+import scala.util.{Failure, Success}
 
 object WishListServer extends App{
 
@@ -31,28 +32,32 @@ object WishListServer extends App{
   server.awaitTermination()
 }
 
-//object ClientDemo extends App {
-//
-//  implicit val ec: ExecutionContextExecutor = ExecutionContext.global
-//
-//  val channel = ManagedChannelBuilder.forAddress("localhost", 50001)
-//    .usePlaintext(true)
-//    .build()
-//
-//  val stub = UserServiceGrpc.stub(channel)
-//
-//  val user = stub.addUser(AddUserRequest("eduardo", "scolaro"))
-//  user.onComplete { r =>
-//    stub.addProduct(AddProductRequest(1, r.get.userId)).onComplete(r2 => {
-//      println(r2.get.productId)
-//      stub.deleteProduct(DeleteProductRequest(r.get.userId, r2.get.productId)).onComplete(r4 => {
-//        println(r4)
-//        println("completed")
-//      })
-//    })
-//  }
-//  val stubManager = new ServiceManager()
-//
+object ClientDemo extends App {
+
+  implicit val ec: ExecutionContextExecutor = ExecutionContext.global
+
+  val channel = ManagedChannelBuilder.forAddress("localhost", 50001)
+    .usePlaintext(true)
+    .build()
+
+  val stub = UserServiceGrpc.stub(channel)
+
+  val user = stub.addUser(AddUserRequest("eduardo", "scolaro"))
+  user.onComplete { r =>
+    stub.addProduct(AddProductRequest(1, r.get.userId)).onComplete(r2 => {
+      println(r2.get.productId)
+      stub.getProducts(GetProductsRequest(r.get.userId)).onComplete(r4 => {
+        println(r4)
+        println("completed")
+      })
+    })
+  }
+  val stubManager = new ServiceManager()
+
+  stubManager.getAddress("wishlist").onComplete{
+    case Success(value) => println(value.get.port)
+    case Failure(exception) => println(exception)
+  }
 //  stubManager.getAddress("wishlist").onComplete{
 //    case Success(value) => println(value.get.address)
 //    case Failure(exception) => println(exception)
@@ -61,10 +66,6 @@ object WishListServer extends App{
 //    case Success(value) => println(value.get.address)
 //    case Failure(exception) => println(exception)
 //  }
-//  stubManager.getAddress("wishlist").onComplete{
-//    case Success(value) => println(value.get.address)
-//    case Failure(exception) => println(exception)
-//  }
-//
-//  System.in.read()
-//}
+
+  System.in.read()
+}

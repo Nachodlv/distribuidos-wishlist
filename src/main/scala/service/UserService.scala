@@ -1,12 +1,16 @@
 package service
 
-import io.grpc.{ManagedChannel, ManagedChannelBuilder}
+import io.grpc.{ManagedChannel, ManagedChannelBuilder, Status, StatusRuntimeException}
 import product.product.{ProductReply, ProductRequest, ProductServiceGrpc}
 import product.user.{AddProductRequest, AddProductResponse, AddUserRequest, AddUserResponse, DeleteProductRequest, DeleteProductResponse, GetProductsRequest, GetProductsResponse, PingReply, PingRequest, UserServiceGrpc}
 import repositories.{UserRepository, WishListRepository}
 import server.ServiceManager
 
-import scala.concurrent.{ExecutionContext, Future}
+import scala.concurrent.duration.Duration
+
+import scala.concurrent.duration.Duration
+import scala.concurrent.{Await, ExecutionContext, Future}
+import scala.util.{Failure, Success}
 
 class UserService(wishListRepo: WishListRepository, userRepo: UserRepository, serviceManager: ServiceManager)(implicit ec: ExecutionContext) extends UserServiceGrpc.UserService  {
 
@@ -22,7 +26,21 @@ class UserService(wishListRepo: WishListRepository, userRepo: UserRepository, se
       val result: Future[Seq[Future[ProductReply]]] =
         wishListRepo.getProducts(in.userId).map(ids => ids.map(id => stub.getProduct(ProductRequest(id))))
       val results2: Future[Seq[ProductReply]] = result.flatMap(r => Future.sequence(r))
-      results2.map(products =>  GetProductsResponse(products))
+
+      /*
+        Se tuve que hacer blocking porque el time to live es igual a 2 segundos lo que nos da la posibilidad
+        que el etcd nos haya dado una address ya caida. Hay que buscar otra solucion.
+      * */
+      val future = Await.ready(results2, Duration.apply(5, "second")).value.get
+
+      future  match {
+        case Success(value) => Future.successful(GetProductsResponse(value))
+        case Failure(exception: StatusRuntimeException) =>
+          if(exception.getStatus.getCode == Status.Code.UNAVAILABLE) {
+            println("Get another stub")
+            getProducts(in)
+          } else throw exception
+      }
     })
   }
 
@@ -43,9 +61,10 @@ class UserService(wishListRepo: WishListRepository, userRepo: UserRepository, se
     Future.successful(PingReply("active"))
   }
 
-  private def getProductStub = {
+  private def getProductStub: Future[ProductServiceGrpc.ProductServiceStub] = {
     serviceManager.getAddress("product").map{
         case Some(value) =>
+          println(value.port)
           val channel: ManagedChannel = ManagedChannelBuilder.forAddress(value.address, value.port)
             .usePlaintext(true)
             .build()
