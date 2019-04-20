@@ -1,8 +1,6 @@
 syntax = "proto3";
 
-package product;
-
-import "product.proto";
+package wishlist;
 
 service WishListService {
     rpc addProduct (AddProductRequest) returns (AddProductResponse) {}
