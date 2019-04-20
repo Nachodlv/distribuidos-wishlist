@@ -1,12 +1,13 @@
 syntax = "proto3";
 
-package wishlist;
+package proto;
+
+import "product.proto";
 
 service WishListService {
     rpc addProduct (AddProductRequest) returns (AddProductResponse) {}
     rpc getProducts (GetProductsRequest) returns (GetProductsResponse) {}
     rpc deleteProduct (DeleteProductRequest) returns (DeleteProductResponse) {}
-    rpc isActive (PingRequest) returns (PingResponse) {}
 }
 
 message AddProductRequest {
@@ -33,12 +34,4 @@ message DeleteProductRequest {
 
 message DeleteProductResponse {
     int64 productId = 1;
-}
-
-message PingRequest {
-
-}
-
-message PingResponse {
-    string response = 1;
 }
