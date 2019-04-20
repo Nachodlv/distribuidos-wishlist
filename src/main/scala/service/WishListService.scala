@@ -26,7 +26,7 @@ class WishListService(wishListRepository: WishListRepository,
 
       val results2: Future[Seq[ProductReply]] = result.flatMap(r => Future.sequence(r))
 
-      /* TODO ver como hacerlo no blocking */
+      /* TODO ver como hacerlo no blockeante */
       val future = Await.ready(results2, Duration.apply(5, "second")).value.get
 
       future  match {
