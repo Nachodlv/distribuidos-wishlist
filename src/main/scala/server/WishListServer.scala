@@ -29,7 +29,6 @@ object WishListServer extends App {
     .addService(WishListServiceGrpc.bindService(
       new WishListService(
         wishListRepository,
-        userRepository,
         stubManager), ExecutionContext.global))
     .build()
 

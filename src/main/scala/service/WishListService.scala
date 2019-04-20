@@ -3,7 +3,7 @@ package service
 import io.grpc.{ManagedChannel, ManagedChannelBuilder, Status, StatusRuntimeException}
 import proto.product.{ProductReply, ProductRequest, ProductServiceGrpc}
 import proto.wishlist.{AddProductRequest, AddProductResponse, DeleteProductRequest, DeleteProductResponse, GetProductsRequest, GetProductsResponse, WishListServiceGrpc}
-import repositories.{UserRepository, WishListRepository}
+import repositories.WishListRepository
 import server.ServiceManager
 
 import scala.concurrent.duration.Duration
@@ -11,7 +11,6 @@ import scala.concurrent.{Await, ExecutionContext, Future}
 import scala.util.{Failure, Success}
 
 class WishListService(wishListRepository: WishListRepository,
-                      userRepository: UserRepository,
                       serviceManager: ServiceManager)
                      (implicit ec: ExecutionContext) extends WishListServiceGrpc.WishListService  {
 
