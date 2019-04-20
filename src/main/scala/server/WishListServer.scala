@@ -1,7 +1,9 @@
 package server
 
 import io.grpc.{ManagedChannelBuilder, ServerBuilder}
+import proto.wishlist.{AddProductRequest, WishListServiceGrpc}
 import repositories.{UserRepository, WishListRepository}
+import service.WishListService
 import slick.basic.DatabaseConfig
 import slick.jdbc.H2Profile
 
@@ -12,15 +14,23 @@ object WishListServer extends App {
 
   implicit val ec: ExecutionContextExecutor = ExecutionContext.global
 
+  // setup stub manager
   val stubManager = new ServiceManager
   stubManager.startConnection("0.0.0.0", 50001, "wishlist")
 
   val config = DatabaseConfig.forConfig[H2Profile]("db")
-  val wishListRepo = new WishListRepository(config)
-  val userRepo = new UserRepository(config)
 
+  // setup repositories
+  val wishListRepository = new WishListRepository(config)
+  val userRepository = new UserRepository(config)
+
+  // setup server
   val server = ServerBuilder.forPort(50001)
-    .addService(UserServiceGrpc.bindService(new UserService(wishListRepo, userRepo, stubManager), ExecutionContext.global))
+    .addService(WishListServiceGrpc.bindService(
+      new WishListService(
+        wishListRepository,
+        userRepository,
+        stubManager), ExecutionContext.global))
     .build()
 
   server.start()
@@ -33,36 +43,20 @@ object ClientDemo extends App {
 
   implicit val ec: ExecutionContextExecutor = ExecutionContext.global
 
-  val channel = ManagedChannelBuilder.forAddress("localhost", 50001)
-    .usePlaintext(true)
-    .build()
+  val channel = ManagedChannelBuilder.forAddress("localhost", 50001).build()
 
-  val stub = UserServiceGrpc.stub(channel)
+  val stub = WishListServiceGrpc.stub(channel)
 
-  val user = stub.addUser(AddUserRequest("eduardo", "scolaro"))
-  user.onComplete { r =>
-    stub.addProduct(AddProductRequest(1, r.get.userId)).onComplete(r2 => {
-      println(r2.get.productId)
-      stub.getProducts(GetProductsRequest(r.get.userId)).onComplete(r4 => {
-        println(r4)
-        println("completed")
-      })
-    })
-  }
+  val wishList = stub.addProduct(AddProductRequest(1, 2))
+
+  wishList.onComplete { res => println(res) }
+
   val stubManager = new ServiceManager()
 
-  stubManager.getAddress("wishlist").onComplete{
+  stubManager.getAddress("wishlist").onComplete {
     case Success(value) => println(value.get.port)
     case Failure(exception) => println(exception)
   }
-//  stubManager.getAddress("wishlist").onComplete{
-//    case Success(value) => println(value.get.address)
-//    case Failure(exception) => println(exception)
-//  }
-//  stubManager.getAddress("wishlist").onComplete{
-//    case Success(value) => println(value.get.address)
-//    case Failure(exception) => println(exception)
-//  }
 
   System.in.read()
 }
