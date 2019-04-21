@@ -12,15 +12,23 @@ import scala.util.Random
 class ServiceManager {
   import scala.concurrent.ExecutionContext.Implicits.global
 
-  // Addres and port of the etcd server
+  /*The address client is the address where etcd is running*/
   val addressClient = "127.0.0.1"
   val addressPort = 2379
-  val tts = 1
+
+  /*The ttl is the time to live for the key in seconds*/
+  val ttl = 1
   private val client = getClient
 
+  /** Adds the service to etcd
+    *
+    * Adds a key/value to etcd where the key is the url and value is the address with the port. The service keeps alive
+    * the key so when it dies the key is removed.
+    */
   def startConnection(address: String, port: Int, url: String): Future[PutResponse] = {
     val id = Random.nextLong()
-    val response = client.rpcClient.leaseRpc.leaseGrant(LeaseGrantRequest(tts, id))
+//    The minimum ttl a lease can receive is 2 seconds. When a minor ttl is granted, it is automatically set to 2.
+    val response = client.rpcClient.leaseRpc.leaseGrant(LeaseGrantRequest(ttl, id))
     val future: Future[PutResponse] = response.flatMap(v => {
       println(v.tTL)
       client.rpcClient.kvRpc
@@ -37,6 +45,10 @@ class ServiceManager {
     future
   }
 
+  /** Gets the address and port for the specific url.
+    *
+    * Gets all the keys matching the url and choose a random value to return.
+    */
   def getAddress(url: String): Future[Option[AddressWithPort]] = {
     val future = client.kvService.getRange(url).map(res => {
       val quantity = res.count
@@ -61,10 +73,14 @@ class ServiceManager {
     ByteString.copyFrom(string.getBytes())
   }
 
+  /** Keeps alive the key
+    *
+    * Keeps alive the key with recursion. The method calls himself every ttl so the key is not removed.
+    * */
   private def keepAlive(id: Long, request: StreamObserver[LeaseKeepAliveRequest]): Unit = {
     request.onNext(LeaseKeepAliveRequest(id))
     Future {
-      Thread.sleep(tts * 1000)
+      Thread.sleep(ttl * 1000)
       keepAlive(id, request)
     }
 
