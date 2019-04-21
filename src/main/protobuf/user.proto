@@ -8,7 +8,6 @@ service UserService {
     rpc getUsers (GetUsersRequest) returns (GetUsersResponse) {}
     rpc updateUser (UpdateUserRequest) returns (UpdateUserResponse) {}
     rpc deleteUser (DeleteUserRequest) returns (DeleteUserResponse) {}
-    rpc isActive (PingRequest) returns (PingResponse) {}
 }
 
 message AddUserRequest {
