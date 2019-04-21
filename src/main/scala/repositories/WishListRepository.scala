@@ -1,6 +1,6 @@
 package repositories
 
-import database.{Db, WishlistTable}
+import database.{Db, WishListTable}
 import models.WishList
 import slick.basic.DatabaseConfig
 import slick.jdbc.H2Profile
@@ -9,7 +9,7 @@ import slick.lifted
 import scala.concurrent.Future
 
 class WishListRepository (val config: DatabaseConfig[H2Profile])
-  extends Db with WishlistTable {
+  extends Db with WishListTable {
 
   import config.profile.api._
 
@@ -29,8 +29,7 @@ class WishListRepository (val config: DatabaseConfig[H2Profile])
     }.map{_.productId}.result
   }
 
-  // Por que no devuelve un Long? TODO me devuelve el id de la fila, no el del producto
   def deleteProduct(userId: Long, productId: Long): Future[Int] = db.run {
-    wishList.filter( w => w.productId === productId && w.userId === userId).delete
+    wishList.filter(w => w.productId === productId && w.userId === userId).delete
   }
 }

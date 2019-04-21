@@ -2,7 +2,7 @@ package database
 
 import models.WishList
 
-trait WishlistTable {
+trait WishListTable {
   this: Db =>
 
   import config.profile.api._

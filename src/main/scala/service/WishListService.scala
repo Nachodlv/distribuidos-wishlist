@@ -1,7 +1,7 @@
 package service
 
 import io.grpc.{ManagedChannel, ManagedChannelBuilder, Status, StatusRuntimeException}
-import proto.product.{ProductReply, ProductRequest, ProductServiceGrpc}
+import proto.product.{ProductRequest, ProductServiceGrpc}
 import proto.wishlist.{AddProductRequest, AddProductResponse, DeleteProductRequest, DeleteProductResponse, GetProductsRequest, GetProductsResponse, WishListServiceGrpc}
 import repositories.WishListRepository
 import server.ServiceManager
@@ -16,20 +16,21 @@ class WishListService(wishListRepository: WishListRepository,
 
   override def addProduct(request: AddProductRequest): Future[AddProductResponse] = {
     wishListRepository.addProduct(request.userId, request.productId) map {
-      w => AddProductResponse(w.productId)
+      wishList => AddProductResponse(wishList.productId)
     }
   }
 
   override def getProducts(request: GetProductsRequest): Future[GetProductsResponse] = {
     getProductStub.flatMap(stub => {
-      val result = wishListRepository.getProducts(request.userId).map(ids => ids.map(id => stub.getProduct(ProductRequest(id))))
+      val result = wishListRepository
+        .getProducts(request.userId)
+        .map(ids => ids.map(id => stub.getProduct(ProductRequest(id))))
+        .flatMap(r => Future.sequence(r))
 
-      val results2: Future[Seq[ProductReply]] = result.flatMap(r => Future.sequence(r))
+      /* TODO no blocking */
+      val future = Await.ready(result, Duration.apply(5, "second")).value.get
 
-      /* TODO ver como hacerlo no blocking */
-      val future = Await.ready(results2, Duration.apply(5, "second")).value.get
-
-      future  match {
+      future match {
         case Success(value) => Future.successful(GetProductsResponse(value))
         case Failure(exception: StatusRuntimeException) =>
           if(exception.getStatus.getCode == Status.Code.UNAVAILABLE) {

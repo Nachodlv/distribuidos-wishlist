@@ -2,13 +2,13 @@ package server
 
 import io.grpc.{ManagedChannelBuilder, ServerBuilder}
 import proto.wishlist.{AddProductRequest, WishListServiceGrpc}
-import repositories.{UserRepository, WishListRepository}
+import repositories.WishListRepository
 import service.WishListService
 import slick.basic.DatabaseConfig
 import slick.jdbc.H2Profile
 
-import scala.concurrent.{ExecutionContext, ExecutionContextExecutor}
-import scala.util.{Failure, Success}
+import scala.concurrent.duration.Duration
+import scala.concurrent.{Await, ExecutionContext, ExecutionContextExecutor}
 
 object WishListServer extends App {
 
@@ -22,7 +22,6 @@ object WishListServer extends App {
 
   // setup repositories
   val wishListRepository = new WishListRepository(config)
-  val userRepository = new UserRepository(config)
 
   // setup server
   val server = ServerBuilder.forPort(50001)
@@ -33,6 +32,7 @@ object WishListServer extends App {
     .build()
 
   server.start()
+
   println("Running...")
 
   server.awaitTermination()
@@ -42,19 +42,23 @@ object ClientDemo extends App {
 
   implicit val ec: ExecutionContextExecutor = ExecutionContext.global
 
-  val channel = ManagedChannelBuilder.forAddress("localhost", 50001).build()
+  val serviceManager = new ServiceManager()
+  val address = Await.ready(serviceManager.getAddress("wishlist"), Duration(5, "second")).value.get.get
+
+  val channel = ManagedChannelBuilder.forAddress(address.get.address, address.get.port)
+    .usePlaintext(true)
+    .build()
 
   val stub = WishListServiceGrpc.stub(channel)
 
+  println("\nAdding product...")
+
   val wishList = stub.addProduct(AddProductRequest(1, 2))
 
-  wishList.onComplete { res => println(res) }
+  print("Product added successfully")
 
-  val stubManager = new ServiceManager()
-
-  stubManager.getAddress("wishlist").onComplete {
-    case Success(value) => println(value.get.port)
-    case Failure(exception) => println(exception)
+  wishList.onComplete {
+    res => println("\nProduct id in the response: " + res.get.productId)
   }
 
   System.in.read()
