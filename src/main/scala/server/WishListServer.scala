@@ -2,7 +2,7 @@ package server
 
 import io.grpc.{ManagedChannelBuilder, ServerBuilder}
 import proto.wishlist.{AddProductRequest, WishListServiceGrpc}
-import repositories.WishListRepository
+import repositories.{WishListRepository, WishListUserRepository}
 import service.WishListService
 import slick.basic.DatabaseConfig
 import slick.jdbc.H2Profile
@@ -22,12 +22,14 @@ object WishListServer extends App {
 
   // setup repositories
   val wishListRepository = new WishListRepository(config)
+  val wishListUserRepository = new WishListUserRepository(config)
 
   // setup server
   val server = ServerBuilder.forPort(50001)
     .addService(WishListServiceGrpc.bindService(
       new WishListService(
         wishListRepository,
+        wishListUserRepository,
         stubManager), ExecutionContext.global))
     .build()
 

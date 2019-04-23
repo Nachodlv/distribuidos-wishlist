@@ -2,8 +2,8 @@ package service
 
 import io.grpc.{ManagedChannel, ManagedChannelBuilder, Status, StatusRuntimeException}
 import proto.product.{ProductRequest, ProductServiceGrpc}
-import proto.wishlist.{AddProductRequest, AddProductResponse, DeleteProductRequest, DeleteProductResponse, GetProductsRequest, GetProductsResponse, WishListServiceGrpc}
-import repositories.WishListRepository
+import proto.wishlist._
+import repositories.{WishListRepository, WishListUserRepository}
 import server.ServiceManager
 
 import scala.concurrent.duration.Duration
@@ -11,10 +11,14 @@ import scala.concurrent.{Await, ExecutionContext, Future}
 import scala.util.{Failure, Success}
 
 class WishListService(wishListRepository: WishListRepository,
+                      wishListUserRepository: WishListUserRepository,
                       serviceManager: ServiceManager)
                      (implicit ec: ExecutionContext) extends WishListServiceGrpc.WishListService  {
 
   override def addProduct(request: AddProductRequest): Future[AddProductResponse] = {
+    //ignore rows affected returned
+    wishListUserRepository.refreshUser(request.userId)
+
     wishListRepository.addProduct(request.userId, request.productId) map {
       wishList => AddProductResponse(wishList.productId)
     }
@@ -39,6 +43,10 @@ class WishListService(wishListRepository: WishListRepository,
           } else throw exception
       }
     })
+  }
+
+  override def getRecentUsers(request: GetRecentUsersRequest): Future[GetRecentUsersResponse] = {
+    wishListUserRepository.getRecentUsers().map(ids => GetRecentUsersResponse(ids))
   }
 
   override def deleteProduct(request: DeleteProductRequest): Future[DeleteProductResponse] = {
