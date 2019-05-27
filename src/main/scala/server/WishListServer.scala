@@ -5,7 +5,7 @@ import proto.wishlist.{AddProductRequest, WishListServiceGrpc}
 import repositories.{WishListRepository, WishListUserRepository}
 import service.WishListService
 import slick.basic.DatabaseConfig
-import slick.jdbc.H2Profile
+import slick.jdbc.MySQLProfile
 
 import scala.concurrent.duration.Duration
 import scala.concurrent.{Await, ExecutionContext, ExecutionContextExecutor}
@@ -18,7 +18,7 @@ object WishListServer extends App {
   val stubManager = new ServiceManager
   stubManager.startConnection("0.0.0.0", 50001, "wishlist")
 
-  val config = DatabaseConfig.forConfig[H2Profile]("db")
+  val config = DatabaseConfig.forConfig[MySQLProfile]("db")
 
   // setup repositories
   val wishListRepository = new WishListRepository(config)

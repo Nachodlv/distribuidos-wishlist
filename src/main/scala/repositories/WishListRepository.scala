@@ -3,12 +3,12 @@ package repositories
 import database.{Db, WishListTable}
 import models.WishList
 import slick.basic.DatabaseConfig
-import slick.jdbc.H2Profile
+import slick.jdbc.MySQLProfile
 import slick.lifted
 
 import scala.concurrent.Future
 
-class WishListRepository (val config: DatabaseConfig[H2Profile])
+class WishListRepository (val config: DatabaseConfig[MySQLProfile])
   extends Db with WishListTable {
 
   import config.profile.api._

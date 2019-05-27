@@ -1,9 +1,9 @@
 package database
 
 import slick.basic.DatabaseConfig
-import slick.jdbc.H2Profile
+import slick.jdbc.MySQLProfile
 
 trait Db {
-  val config: DatabaseConfig[H2Profile]
-  val db: H2Profile#Backend#Database = config.db
+  val config: DatabaseConfig[MySQLProfile]
+  val db: MySQLProfile#Backend#Database = config.db
 }

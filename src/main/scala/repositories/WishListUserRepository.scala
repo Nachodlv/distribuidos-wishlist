@@ -2,14 +2,14 @@ package repositories
 
 import com.google.protobuf.timestamp.Timestamp
 import database.{Db, WishListTable}
-import models.{WishList, WishListUser}
+import models.WishListUser
 import slick.basic.DatabaseConfig
-import slick.jdbc.H2Profile
+import slick.jdbc.MySQLProfile
 import slick.lifted
 
 import scala.concurrent.Future
 
-class WishListUserRepository(val config: DatabaseConfig[H2Profile])
+class WishListUserRepository(val config: DatabaseConfig[MySQLProfile])
   extends Db with WishListTable {
 
   import config.profile.api._

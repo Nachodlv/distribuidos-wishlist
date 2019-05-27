@@ -1,8 +1,8 @@
 import Dependencies._
 
-ThisBuild / scalaVersion     := "2.12.8"
-ThisBuild / version          := "0.1.0-SNAPSHOT"
-ThisBuild / organization     := "com.example"
+ThisBuild / scalaVersion := "2.12.8"
+ThisBuild / version := "0.1.0-SNAPSHOT"
+ThisBuild / organization := "com.example"
 ThisBuild / organizationName := "example"
 
 lazy val root = (project in file("."))
@@ -12,11 +12,12 @@ lazy val root = (project in file("."))
   )
 
 libraryDependencies ++= Seq(
-  "com.typesafe"                 % "config"                 % "1.3.0"                            
+  "com.typesafe" % "config" % "1.3.0"
     withSources() withJavadoc(),
-  "com.typesafe.slick"          %% "slick"                  % "3.3.0",
-  "org.slf4j"                    % "slf4j-nop"              % "1.6.4",
-  "com.h2database"               % "h2"                     % "1.4.199"
+  "com.typesafe.slick" %% "slick" % "3.3.0",
+  "org.slf4j" % "slf4j-nop" % "1.6.4",
+  "com.typesafe.slick" %% "slick-hikaricp" % "3.2.0",
+  "mysql" % "mysql-connector-java" % "8.0.15"
 )
 
 
