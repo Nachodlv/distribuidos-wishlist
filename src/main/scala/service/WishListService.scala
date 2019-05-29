@@ -31,9 +31,8 @@ class WishListService(wishListRepository: WishListRepository,
       .map(ids => ids.map(id => stubManager.productStub.getProduct(ProductRequest(id))))
       .flatMap(r => Future.sequence(r))
 
-    /* TODO no blocking */
-//    val future = Await.ready(result, Duration.apply(5, "second")).value.get
-    val future: Try[Seq[ProductReply]] = result.value.get
+    val future = Await.ready(result, Duration.apply(5, "second")).value.get
+//    val future: Try[Seq[ProductReply]] = result.value.get
 
     future match {
       case Success(value) => Future.successful(GetProductsResponse(value))
