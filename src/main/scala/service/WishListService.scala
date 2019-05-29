@@ -4,6 +4,7 @@ import io.grpc.{ManagedChannel, ManagedChannelBuilder, Status, StatusRuntimeExce
 import proto.product.{ProductReply, ProductRequest, ProductServiceGrpc}
 import proto.wishlist._
 import repositories.{WishListRepository, WishListUserRepository}
+import server.StubManager
 
 import scala.concurrent.duration.Duration
 import scala.concurrent.{Await, ExecutionContext, Future}
@@ -11,7 +12,7 @@ import scala.util.{Failure, Success, Try}
 
 class WishListService(wishListRepository: WishListRepository,
                       wishListUserRepository: WishListUserRepository,
-                      productStub: ProductServiceGrpc.ProductServiceStub)
+                      stubManager: StubManager)
                      (implicit ec: ExecutionContext) extends WishListServiceGrpc.WishListService  {
 
   override def addProduct(request: AddProductRequest): Future[AddProductResponse] = {
@@ -27,7 +28,7 @@ class WishListService(wishListRepository: WishListRepository,
 
     val result: Future[Seq[ProductReply]] = wishListRepository
       .getProducts(request.userId)
-      .map(ids => ids.map(id => productStub.getProduct(ProductRequest(id))))
+      .map(ids => ids.map(id => stubManager.productStub.getProduct(ProductRequest(id))))
       .flatMap(r => Future.sequence(r))
 
     /* TODO no blocking */

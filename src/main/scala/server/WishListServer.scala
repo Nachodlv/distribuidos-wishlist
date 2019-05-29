@@ -25,19 +25,13 @@ object WishListServer extends App {
   val wishListRepository = new WishListRepository(config)
   val wishListUserRepository = new WishListUserRepository(config)
 
-  val channel: ManagedChannel = ManagedChannelBuilder.forAddress("product", 50000)
-    .usePlaintext(true)
-    .build()
-
-  val stub: ProductServiceGrpc.ProductServiceStub = ProductServiceGrpc.stub(channel)
-
   // setup server
   val server = ServerBuilder.forPort(50001)
     .addService(WishListServiceGrpc.bindService(
       new WishListService(
         wishListRepository,
         wishListUserRepository,
-        stub), ExecutionContext.global))
+        new StubManager), ExecutionContext.global))
     .build()
 
   server.start()
