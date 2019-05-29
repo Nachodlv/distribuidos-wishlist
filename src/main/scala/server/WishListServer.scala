@@ -1,29 +1,36 @@
 package server
 
-import io.grpc.{ManagedChannel, ManagedChannelBuilder, ServerBuilder}
-import proto.product.ProductServiceGrpc
-import proto.wishlist.{AddProductRequest, WishListServiceGrpc}
+import com.typesafe.config.{Config, ConfigFactory, ConfigValueFactory}
+import io.grpc.ServerBuilder
+import proto.wishlist.WishListServiceGrpc
 import repositories.{WishListRepository, WishListUserRepository}
 import service.WishListService
 import slick.basic.DatabaseConfig
 import slick.jdbc.MySQLProfile
 
-import scala.concurrent.duration.Duration
-import scala.concurrent.{Await, ExecutionContext, ExecutionContextExecutor}
+import scala.concurrent.{ExecutionContext, ExecutionContextExecutor}
 
 object WishListServer extends App {
 
   implicit val ec: ExecutionContextExecutor = ExecutionContext.global
 
+  // root is the default value for user and password
+  val user: String = args.lift(0).getOrElse("root")
+  val password: String = args.lift(1).getOrElse("root")
+
   // setup stub manager
   /*val stubManager = new ServiceManager
   stubManager.startConnection("0.0.0.0", 50001, "wishlist")*/
 
-  val config = DatabaseConfig.forConfig[MySQLProfile]("db")
+  val config: Config = ConfigFactory.load("db")
+  val url: String = s"jdbc:mysql://localhost:3306/test?user=$user&password=$password"
+  val newConfig = config.withValue("db.db.url", ConfigValueFactory.fromAnyRef(url))
+
+  val databaseConfig = DatabaseConfig.forConfig[MySQLProfile]("db", newConfig)
 
   // setup repositories
-  val wishListRepository = new WishListRepository(config)
-  val wishListUserRepository = new WishListUserRepository(config)
+  val wishListRepository = new WishListRepository(databaseConfig)
+  val wishListUserRepository = new WishListUserRepository(databaseConfig)
 
   // setup server
   val server = ServerBuilder.forPort(50001)
