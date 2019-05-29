@@ -1,6 +1,7 @@
 package server
 
-import io.grpc.{ManagedChannelBuilder, ServerBuilder}
+import io.grpc.{ManagedChannel, ManagedChannelBuilder, ServerBuilder}
+import proto.product.ProductServiceGrpc
 import proto.wishlist.{AddProductRequest, WishListServiceGrpc}
 import repositories.{WishListRepository, WishListUserRepository}
 import service.WishListService
@@ -15,8 +16,8 @@ object WishListServer extends App {
   implicit val ec: ExecutionContextExecutor = ExecutionContext.global
 
   // setup stub manager
-  val stubManager = new ServiceManager
-  stubManager.startConnection("0.0.0.0", 50001, "wishlist")
+  /*val stubManager = new ServiceManager
+  stubManager.startConnection("0.0.0.0", 50001, "wishlist")*/
 
   val config = DatabaseConfig.forConfig[MySQLProfile]("db")
 
@@ -24,13 +25,19 @@ object WishListServer extends App {
   val wishListRepository = new WishListRepository(config)
   val wishListUserRepository = new WishListUserRepository(config)
 
+  val channel: ManagedChannel = ManagedChannelBuilder.forAddress("product", 50000)
+    .usePlaintext(true)
+    .build()
+
+  val stub: ProductServiceGrpc.ProductServiceStub = ProductServiceGrpc.stub(channel)
+
   // setup server
   val server = ServerBuilder.forPort(50001)
     .addService(WishListServiceGrpc.bindService(
       new WishListService(
         wishListRepository,
         wishListUserRepository,
-        stubManager), ExecutionContext.global))
+        stub), ExecutionContext.global))
     .build()
 
   server.start()
@@ -40,7 +47,7 @@ object WishListServer extends App {
   server.awaitTermination()
 }
 
-object ClientDemo extends App {
+/*object ClientDemo extends App {
 
   implicit val ec: ExecutionContextExecutor = ExecutionContext.global
 
@@ -64,4 +71,4 @@ object ClientDemo extends App {
   }
 
   System.in.read()
-}
+}*/
